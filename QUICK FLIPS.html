@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Tracking</title>
+    <link rel="stylesheet" href="QFstyles.css">
+    <style>
+        /* Define the CSS class for highlighting */
+        .highlighted {
+            background-color: yellow !important;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="box">
+
+        <div class="topnav">
+            <a href="TO DO.html">QC TO DO LIST</a>
+        </div>
+
+    </section>
+
+    <div class="header">
+        <h1> QUICK FLIPS </h1>
+    </div>
+    
+    <div class="table-container">
+        <table id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>QTY.</th>
+                    <th>ITEM</th>
+                    <th>JOB #</th>
+                    <th>LOAD TRUCK</th>
+                    <th>TECH</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populate the table with your data -->
+                <tr>
+                    <td>10</td>
+                    <td>Televic G3 base Station</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>AM</td>
+                </tr>
+
+                <tr>
+                    <td>1</td>
+                    <td>FSII rack</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>MC</td>
+                </tr>
+
+                <tr>
+                    <td>5</td>
+                    <td>GLP X4</td>
+                    <td>24-8756</td>
+                    <td>3/12/2024</td>
+                    <td>CR</td>
+                </tr>
+
+                <tr>
+                    <td>10</td>
+                    <td>Televic G3 base Station</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>AM</td>
+                </tr>
+
+                <tr>
+                    <td>1</td>
+                    <td>FSII rack</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>MC</td>
+                </tr>
+
+                <tr>
+                    <td>5</td>
+                    <td>GLP X4</td>
+                    <td>24-8756</td>
+                    <td>3/12/2024</td>
+                    <td>CR</td>
+                </tr>
+
+                <tr>
+                    <td>10</td>
+                    <td>Televic G3 base Station</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>AM</td>
+                </tr>
+
+                <tr>
+                    <td>1</td>
+                    <td>FSII rack</td>
+                    <td>24-9999</td>
+                    <td>3/12/2024</td>
+                    <td>MC</td>
+                </tr>
+
+                <tr>
+                    <td>5</td>
+                    <td>GLP X4</td>
+                    <td>24-8756</td>
+                    <td>3/12/2024</td>
+                    <td>CR</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <section id="Buttons">
+
+        <button id="separateBtn">Separate</button>
+        <button id="deleteBtn">Delete</button>
+
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function handleDoubleClick() {
+                this.classList.toggle('highlighted');
+
+                var rowIndex = this.dataset.rowIndex;
+                var listId = this.dataset.listId;
+                var isHighlighted = this.classList.contains('highlighted');
+                localStorage.setItem('highlightedRow_' + listId + '_' + rowIndex, isHighlighted);
+            }
+
+            function addBlankRow() {
+                var table = document.getElementById('inventoryTable');
+                var highlightedRow = table.querySelector('.highlighted');
+
+                if (highlightedRow) {
+                    var blankRow = document.createElement('tr');
+                    var cell = blankRow.insertCell(0);
+                    cell.style.backgroundColor = 'transparent';
+                    blankRow.setAttribute('blank-row', 'true');
+
+                    // Use the rowIndex from the dataset to ensure accurate positioning
+                    var rowIndex = parseInt(highlightedRow.dataset.rowIndex);
+
+                    // Check if there are any previous blank rows and adjust the rowIndex accordingly
+                    var previousBlankRows = table.querySelectorAll('tr[blank-row="true"]');
+                    var offset = 0;
+
+                    previousBlankRows.forEach(function (previousBlankRow) {
+                        var previousRowIndex = parseInt(previousBlankRow.dataset.rowIndex);
+                        if (previousRowIndex < rowIndex) {
+                            offset++;
+                        }
+                    });
+
+                    rowIndex += offset;
+
+                    localStorage.setItem('blankRow_' + rowIndex, 'true');
+
+                    // Insert the blank row at the adjusted index
+                    var rowGroup = highlightedRow.parentNode.tagName === 'TBODY' ? highlightedRow.parentNode : highlightedRow.parentNode.parentNode;
+                    rowGroup.insertBefore(blankRow, highlightedRow.nextSibling);
+                } else {
+                    var tableBody = table.getElementsByTagName('tbody')[0];
+                    var lastRow = tableBody.rows[tableBody.rows.length - 1];
+                    var blankRow = tableBody.insertRow(lastRow.rowIndex + 1);
+                    var cell = blankRow.insertCell(0);
+                    cell.style.backgroundColor = 'transparent';
+                    blankRow.setAttribute('blank-row', 'true');
+
+                    var rowIndex = Array.from(tableBody.rows).indexOf(blankRow);
+                    localStorage.setItem('blankRow_' + rowIndex, 'true');
+                }
+            }
+
+            function removeBlankRows() {
+                var table = document.getElementById('inventoryTable');
+                var highlightedRow = table.querySelector('.highlighted');
+
+                if (highlightedRow) {
+                    var nextRow = highlightedRow.nextElementSibling;
+
+                    while (nextRow && nextRow.getAttribute('blank-row') === 'true') {
+                        var currentRow = nextRow;
+                        nextRow = currentRow.nextElementSibling;
+                        currentRow.parentNode.removeChild(currentRow);
+                    }
+
+                    // Update the information about removed blank rows in localStorage
+                    updateBlankRowInformation();
+                }
+            }
+
+            function updateBlankRowInformation() {
+                var tableBody = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
+
+                // Reset all blank row information
+                for (var i = 0; i < tableBody.rows.length; i++) {
+                    localStorage.removeItem('blankRow_' + i);
+                }
+
+                // Update localStorage with the correct blank row information
+                var blankRows = tableBody.querySelectorAll('tr[blank-row="true"]');
+                blankRows.forEach(function (blankRow, index) {
+                    var rowIndex = Array.from(tableBody.rows).indexOf(blankRow);
+                    localStorage.setItem('blankRow_' + rowIndex, 'true');
+                });
+            }
+
+            function initializeBlankRows() {
+                var table = document.getElementById('inventoryTable');
+                var tableBody = table.getElementsByTagName('tbody')[0];
+                var blankRowsInfo = [];
+
+                for (var i = 0; i < tableBody.rows.length; i++) {
+                    var isBlank = localStorage.getItem('blankRow_' + i);
+
+                    if (isBlank === 'true') {
+                        blankRowsInfo.push(i);
+                    }
+                }
+
+                // Sort blankRowsInfo in ascending order so that we can insert rows correctly
+                blankRowsInfo.sort(function (a, b) {
+                    return a - b;
+                });
+
+                blankRowsInfo.forEach(function (rowIndex) {
+                    var blankRow = tableBody.insertRow(rowIndex);
+                    var cell = blankRow.insertCell(0);
+                    cell.style.backgroundColor = 'transparent';
+                    blankRow.setAttribute('blank-row', 'true');
+                });
+
+                var placeholderRows = tableBody.querySelectorAll('tr[style="height: 20px;"]');
+                placeholderRows.forEach(function (placeholderRow) {
+                    placeholderRow.parentNode.removeChild(placeholderRow);
+                });
+            }
+
+            function initializeHighlighting() {
+                var rows = document.querySelectorAll('#inventoryTable tbody tr');
+
+                rows.forEach(function (row, index) {
+                    var listId = 'quickflips';
+                    var isHighlighted = localStorage.getItem('highlightedRow_' + listId + '_' + index);
+
+                    if (isHighlighted === 'true') {
+                        row.classList.add('highlighted');
+                    }
+
+                    row.dataset.listId = listId;
+                    row.dataset.rowIndex = index;
+
+                    row.addEventListener('dblclick', handleDoubleClick);
+                });
+            }
+
+            var separateBtn = document.getElementById('separateBtn');
+            separateBtn.addEventListener('click', function () {
+                addBlankRow();
+                initializeHighlighting();
+            });
+
+            var deleteBtn = document.getElementById('deleteBtn');
+            deleteBtn.addEventListener('click', function () {
+                removeBlankRows();
+                initializeHighlighting();
+            });
+
+            initializeBlankRows();
+            initializeHighlighting();
+        });
+    </script>
+
+
+</body>
+</html>
